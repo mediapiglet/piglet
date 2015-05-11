@@ -80,6 +80,25 @@ router.get('/api/:version/playlists/list', function (req, res, next) {
     });
 });
 
+router.get('/api/:version/music/filedata/:encPath', function (req, res, next) {
+    var encPath = req.params.encPath;
+    console.log('Called get filedata');
+    MongoClient.connect("mongodb://localhost:27017/piglet", function (err, db) {
+        if (err) {
+            console.error(err);
+        }
+        var playlistCollection = db.collection('music_files_meta');
+        playlistCollection.findOne({
+            encPath: encPath
+        }, function (err, fileData) {
+            console.log(fileData);
+            res.send(fileData);
+
+
+        });
+    });
+
+});
 router.get('/api/:version/music/search/:query/:artist?', function (req, res, next) {
     var query = req.params.query;
     MongoClient.connect("mongodb://localhost:27017/piglet", function (err, db) {
@@ -92,29 +111,29 @@ router.get('/api/:version/music/search/:query/:artist?', function (req, res, nex
         metaCollection.aggregate([
             {$group: {_id: '$data.album', totalFiles: {$sum: 1}}}
             /*
-            ,{
-                $match: {
-                    $or: [
-                        {path: {$regex: query, $options: 'i'}},
-                        {'data.artist': {$regex: query, $options: 'i'}}
-                    ]
-                }
-            }
-            */
+             ,{
+             $match: {
+             $or: [
+             {path: {$regex: query, $options: 'i'}},
+             {'data.artist': {$regex: query, $options: 'i'}}
+             ]
+             }
+             }
+             */
         ], function (err, resArray) {
             if (err) {
                 console.log(err);
             }
             resArray.forEach(function (metaRow) {
                 console.log(metaRow);
-               /*
-                var thisMeta = {};
-                thisMeta.path = metaRow.path;
-                thisMeta.title = metaRow.data.title;
-                thisMeta.album = metaRow.data.album;
-                thisMeta.artist = metaRow.data.artist;
-                returnArray.push(thisMeta);
-                */
+                /*
+                 var thisMeta = {};
+                 thisMeta.path = metaRow.path;
+                 thisMeta.title = metaRow.data.title;
+                 thisMeta.album = metaRow.data.album;
+                 thisMeta.artist = metaRow.data.artist;
+                 returnArray.push(thisMeta);
+                 */
             });
             res.send(returnArray);
 

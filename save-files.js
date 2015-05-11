@@ -9,34 +9,6 @@ process.on('uncaughtException', function (exception) {
 
 
 
-saveId3 = function() {
-    MongoClient.connect("mongodb://localhost:27017/piglet", function (err, db) {
-        if (err) {
-            console.error(err);
-        }
-        var filesCollection = db.collection('music_files');
-        var filesCur = filesCollection.find({meta:0});
-
-        var total = 0;
-        console.log('Here');
-        filesCur.forEach(function(file) {
-            if(file) {
-                id3({file: file.path, type: id3.OPEN_LOCAL}, function (err, tags) {
-                    var metaCollection = db.collection('music_files_meta');
-                    var metaDoc = {};
-                    metaDoc.path = file.path;
-                    metaDoc.data = tags;
-                    metaCollection.insertOne(metaDoc,{},function(err,doneData) {
-                        total++;
-                        console.log(total);
-                    });
-                    // tags now contains your ID3 tags
-                });
-            }
-        });
-    });
-
-};
 savePaths = function () {
 
     MongoClient.connect("mongodb://localhost:27017/piglet", function (err, db) {
@@ -61,7 +33,8 @@ savePaths = function () {
                         var thisFile = {};
                         var pathBuffer = new Buffer(file);
                         var pathBase64 = pathBuffer.toString('base64');
-                        thisFile.path = file.replace(/\/media\/marcus\/Elements\/mdt\/mp3/,'');
+                        thisFile.relPath = file.replace(/\/media\/marcus\/Elements\/mdt\/mp3/,'');
+                        thisFile.path = file;
                         thisFile.encPath = pathBase64;
                         console.log(thisFile);
                         thisFile.meta = 0;
@@ -80,4 +53,3 @@ savePaths = function () {
     });
 };
 savePaths();
-//saveId3();

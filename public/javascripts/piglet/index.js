@@ -195,6 +195,11 @@ playFile = function (file, myPlayer, currentlyPlaying) {
     currentlyPlaying.file = file;
     myPlayer.src({src: url});
     myPlayer.play();
+    var url = '/api/1.0/music/filedata/'+file;
+    $.getJSON(url, function (res) {
+        console.log(res);
+    });
+
 
     $('[data-file-type="fileList"]').removeClass('bold');
     $('[data-file="' + file + '"]').addClass('bold');
