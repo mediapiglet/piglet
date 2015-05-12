@@ -19,6 +19,8 @@ $(document).ready(function () {
     // var url = '/api/1.0/media/list/L2RhdGE=';
     var path = '/media/marcus/Elements/mdt/mp3';
     var encPath = 'L21lZGlhL21hcmN1cy9FbGVtZW50cy9tZHQvbXAz';
+    var path = '/data';
+    var encPath = 'L2RhdGE=';
     var url = '/api/1.0/media/list/' + encPath;
 
     $('body').delegate('[data-role="doLogin"]', 'click', function () {
