@@ -21,7 +21,7 @@ saveId3 = function() {
         filesCur.forEach(function(file) {
             if(file) {
                 id3({file: file.path, type: id3.OPEN_LOCAL}, function (err, tags) {
-                    var metaCollection = db.collection('music_files_meta');
+                    var metaCollection = db.collection('music_files_meta_laptop');
                     var metaDoc = {};
                     metaDoc.path = file.path;
                     metaDoc.relPath = file.relPath;

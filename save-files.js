@@ -7,6 +7,10 @@ process.on('uncaughtException', function (exception) {
     // handle or ignore error
 });
 
+var config = {
+    basePath : '/data'
+};
+
 
 
 savePaths = function () {
@@ -18,7 +22,7 @@ savePaths = function () {
 
         var filesCollection = db.collection('music_files');
 
-        recursive('/media/marcus/Elements/mdt/mp3', function (err, files) {
+        recursive(config.basePath, function (err, files) {
             // Files is an array of filename
             var totalFiles = files.length;
             var savedMusicFiles = 0;
