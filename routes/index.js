@@ -91,9 +91,14 @@ router.get('/api/:version/music/filedata/:encPath', function (req, res, next) {
         playlistCollection.findOne({
             encPath: encPath
         }, function (err, fileData) {
-            console.log(fileData);
-            res.send(fileData);
-
+            if (fileData) {
+                fileData.filename = fileData.path.split('\\').pop().split('/').pop();
+                res.send(fileData);
+            } else {
+                var noData = {};
+                noData.status = 1;
+                res.send(noData);
+            }
 
         });
     });
@@ -109,33 +114,77 @@ router.get('/api/:version/music/search/:query/:artist?', function (req, res, nex
         var metaCollection = db.collection('music_files_meta');
         var returnArray = [];
         metaCollection.aggregate([
-            {$group: {_id: '$data.album', totalFiles: {$sum: 1}}}
-            /*
-             ,{
-             $match: {
-             $or: [
-             {path: {$regex: query, $options: 'i'}},
-             {'data.artist': {$regex: query, $options: 'i'}}
-             ]
-             }
-             }
-             */
+            {
+                $match: {
+                    $or: [
+                        {'path': {$regex: query, $options: 'i'}},
+                        {'data.artist': {$regex: query, $options: 'i'}},
+                        {'data.title': {$regex: query, $options: 'i'}},
+                        {'data.album': {$regex: query, $options: 'i'}}
+                    ]
+                }
+            }
         ], function (err, resArray) {
             if (err) {
                 console.log(err);
             }
-            resArray.forEach(function (metaRow) {
-                console.log(metaRow);
-                /*
-                 var thisMeta = {};
-                 thisMeta.path = metaRow.path;
-                 thisMeta.title = metaRow.data.title;
-                 thisMeta.album = metaRow.data.album;
-                 thisMeta.artist = metaRow.data.artist;
-                 returnArray.push(thisMeta);
-                 */
-            });
-            res.send(returnArray);
+
+            if (!resArray) {
+                var result = {};
+                result.result = 1;
+                returnArray.push(result.result);
+                res.send(returnArray);
+            } else {
+                var albums = {}, artists = {};
+                var albumArray = [];
+                var numberAlbums= 0, numberArtists = 0;
+                resArray.forEach(function (metaRow) {
+                    var thisMeta = {};
+                    thisMeta._id = metaRow.path;
+                    thisMeta.encPath = metaRow.encPath;
+                    thisMeta.filename = metaRow.path.split('\\').pop().split('/').pop();
+                    thisMeta.title = metaRow.data.title;
+                    thisMeta.album = metaRow.data.album;
+                    thisMeta.artist = metaRow.data.artist;
+                    if(thisMeta.title === '' || (!thisMeta.title)) {
+                        thisMeta.title = thisMeta.filename;
+                    }
+                    if(thisMeta.album === '' || (!thisMeta.album)) {
+                        thisMeta.album = 'Unknown';
+                    }
+                    if(thisMeta.artist === '' || (!thisMeta.artist)) {
+                        thisMeta.artist = '-';
+                    }
+                    var album = thisMeta.album;
+                    var artist = thisMeta.artist;
+                    if(!albums[album]) {
+                        albums[album]=0;
+                        numberAlbums++;
+                    }
+                    if(!artists[artist]) {
+                        artists[artist]=0;
+                        numberArtists++;
+                    }
+                    albums[album]++;
+                    artists[artist]++;
+                    returnArray.push(thisMeta);
+
+                });
+                for (var album in albums) {
+                    var thisAlbum = {};
+                    thisAlbum.name = album;
+                    thisAlbum.number = albums[album];
+                    albumArray.push(thisAlbum);
+                }
+
+                var output = {};
+                output.numberAlbums = numberAlbums;
+                output.numberArtists = numberArtists;
+                output.allResults = returnArray;
+                // output.albumResults = albumArray;
+                output.albums = albumArray;
+                res.send(output);
+            }
 
         });
         /*

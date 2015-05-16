@@ -16,6 +16,28 @@
         .hidden {
             display: none;
         }
+
+        .result-table {
+            height: 450px;
+        }
+
+        video {
+            float: right;
+        }
+
+
+        .meta-info {
+            position: absolute;
+            width: 98%;
+            color: #fff;
+            padding: 2px 5px 5px 5px;
+            border-radius: 3px;
+            top: 5px;
+            left: 5px;
+            text-align: center;
+            font-size: 1.8em;
+
+        }
     </style>
 </head>
 <body>
@@ -29,16 +51,24 @@
     </div>
     <div class="clearfix sm-hide"></div>
     <div class="overflow-hidden px2 py1">
-        <input type="text" class="mb0 mr2 fit field-dark" placeholder="Search">
-
-        <button class="right" data-role="doLogin">Login</button>
-        <input type="text" data-role="username" class="mb0 fit field-dark right" placeholder="User">
-
+        <input type="text" data-role="search-top" class="mb0 mr2 fit field-dark" placeholder="Search">
     </div>
+
+    <!--
+    Filename: <span data-role="meta-filename" class="meta-field"></span>
+    Title: <span data-role="meta-title" class="meta-field"></span>
+    Artist: <span data-role="meta-artist" class="meta-field"></span>
+    Album: <span data-role="meta-album" class="meta-field"></span>
+    -->
+
+    <video id="mainVideo" class="video-js vjs-default-skin" controls
+           data-setup='{"controls":true, "width" : "100%", "height": "75"}'>
+    </video>
+
 </div>
 <div class="container" data-role="pane" data-pane="home">
     <header class="center px3 py4 white bg-gray bg-cover bg-center"
-            style="background-image: url(http://wondersofdisney.yolasite.com/resources/winniethepooh/poohnpiglet/tiredpooh&piglet.gif)">
+            style="background-image: url(http://wondersofdisney.yolasite.com/resources/winniethepooh/poohnpiglet/tiredpooh&piglet.igif)">
         <h1 class="h1 h0-responsive caps mt4 mb0 regular">Piglet</h1>
 
         <p class="h3">Media - Easy</p>
@@ -73,13 +103,6 @@
             <select data-role="listPlaylists" class="block full-width mb1 field-light">
                 <option></option>
             </select>
-            Filename: -<br/>
-            Title: -<br />
-            Album: -<br />
-
-            <video id="mainVideo" class="video-js vjs-default-skin" controls
-                   data-setup='{"controls":true, "width" : "100%", "height": "50"}'>
-            </video>
 
             <form id="savePlaylistForm" method="post">
                 <h3>
@@ -102,8 +125,71 @@
                 </table>
             </form>
         </div>
-
     </div>
+</div>
+<div class="container hidden" data-role="pane" data-pane="collection">
+    <div class="clearfix">
+        <div class="sm-col sm-col-6">
+            <div class="inline-block clearfix">
+                <button type="button" data-role="collection-section" data-collection-section="files"
+                        class="left button x-group-item rounded-left">Files
+                </button>
+                <button type="button" data-role="collection-section" data-collection-section="albums"
+                        class="left button-outline x-group-item not-rounded">Albums <span
+                        data-role="total-album"></span></button>
+                <button type="button" data-role="collection-section" data-collection-section="artists"
+                        class="left button-outline x-group-item rounded-right">Artists <span
+                        data-role="total-artist"></span></button>
+            </div>
+            <div data-role="collection-results">
+                <div class="overflow-scroll result-table">
+                    <table data-role="files-result-table">
+                        <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Artist</th>
+                            <th>Album</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+
+                    <table data-role="albums-result-table">
+                        <thead>
+                        <tr>
+                            <th>Album</th>
+                            <th>Number Files</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                    <table data-role="artists-result-table">
+                        <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Artist</th>
+                            <th>Album</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div data-role="search-debug">
+
+                </div>
+            </div>
+        </div>
+        <div class="sm-col sm-col-6">
+            Here
+        </div>
+    </div>
+</div>
 </body>
 </html>
 <script src="/javascripts/jquery-2.1.4.min.js"></script>

@@ -1,5 +1,6 @@
 $(document).ready(function () {
 
+    var topSearchField = $('[data-role="search-top"]');
     var dynatable = '';
     var filetable = '',
         playlisttable = '';
@@ -15,12 +16,23 @@ $(document).ready(function () {
             console.log('Playing file');
         });
     });
-    // var url = '/api/1.0/media/list/L21lZGlhL21hcmN1cy9FbGVtZW50cy9tZHQ=';
-    // var url = '/api/1.0/media/list/L2RhdGE=';
-    var path = '/media/marcus/Elements/mdt/mp3';
-    var encPath = 'L21lZGlhL21hcmN1cy9FbGVtZW50cy9tZHQvbXAz';
-    var path = '/data';
-    var encPath = 'L2RhdGE=';
+    myPlayer.ready(function () {
+        var playEl = $('#mainVideo');
+        playEl.append('<div class="vjs-overlay"><span data-role="meta-title"></span> - <span data-role="meta-album"></span> - <span data-role="meta-artist"></span></div>');
+        console.log('Player ready');
+    });
+    /*.overlay({
+     overlays: [
+     {
+     content: '<span data-role="overley-title">Bob Marley</span>',
+     start: 'play',
+     end: 'pause'
+     }
+     ]
+     });
+     */
+    var encPath = 'L21lZGlhL21hcmN1cy9FbGVtZW50cy9tZHQvbXAz'; // /media/marcus/Elements/mdt/mp3'
+    // var encPath = 'L2RhdGE='; // /data
     var url = '/api/1.0/media/list/' + encPath;
 
     $('body').delegate('[data-role="doLogin"]', 'click', function () {
@@ -71,6 +83,15 @@ $(document).ready(function () {
 
 
     });
+    $('body').delegate('[data-role="search-top"]', 'input', function () {
+        var numberChars = this.value.length;
+        if (numberChars >= 3) {
+            selectSection('collection')
+            searchCollection();
+        } else {
+            clearSelection();
+        }
+    });
 
     $('#mediaTable').delegate('[data-role="selectDir"]', 'click', function () {
         var selectedDir = $(this).attr('data-dir');
@@ -80,13 +101,21 @@ $(document).ready(function () {
     });
     $('body').delegate('[data-role="selectSection"]', 'click', function () {
         var section = $(this).attr('data-section');
-        $('[data-role="pane"]').hide();
-        $('[data-pane="'+section+'"]').show();
-        $('[data-role="selectSection"]').addClass('button-transparent');
-        $(this).removeClass('button-transparent');
+        selectSection(section);
+    });
+    $('body').delegate('[data-role="collection-section"]', 'click', function () {
+        var section = $(this).attr('data-collection-section');
+        selectCollectionSection(section);
     });
 
+
+    $('body').delegate('[data-role="selectAlbum"]', 'click', function () {
+    });
     $('body').delegate('[data-role="selectFile"]', 'click', function () {
+        var selectedFile = $(this).attr('data-file');
+        playFile(selectedFile, myPlayer, currentlyPlaying);
+    });
+    $('body').delegate('[data-role="selectFileFromCollection"]', 'click', function () {
         var selectedFile = $(this).attr('data-file');
         playFile(selectedFile, myPlayer, currentlyPlaying);
     });
@@ -128,14 +157,13 @@ $(document).ready(function () {
         fileObject.filename = selectedFilename;
         currentPlaylist.push(fileObject);
         loadPlaylistTable(playlisttable, currentPlaylist);
-        $('[data-file="' + selectedFile + '"]').addClass('bold');
+        $(this).addClass('bold');
 
     });
     var playlistUrl = '/api/1.0/playlists/list';
     $.getJSON(playlistUrl, function (res) {
         var playDrop = $('[data-role="listPlaylists"]');
         for (var i = 0; i < res.length; i++) {
-            console.log(res[i]);
             playDrop.append($("<option></option>")
                 .attr("value", res[i]._id)
                 .text(res[i].name));
@@ -149,11 +177,13 @@ $(document).ready(function () {
             currentPlaylist = newCurrentPlaylist;
         });
     });
+    $('[data-role="artists-result-table"]').hide();
+    $('[data-role="albums-result-table"]').hide();
     /*
-     setInterval(function() {
+     setInterval(function () {
      console.log(currentlyPlaying);
      console.log(currentPlaylist);
-     },1000);
+     }, 1000);
      */
 });
 loadPlaylist = function (playlistId, currentPlaylist, playlisttable, callback) {
@@ -163,7 +193,6 @@ loadPlaylist = function (playlistId, currentPlaylist, playlisttable, callback) {
         currentPlaylist = res.files;
         loadPlaylistTable(playlisttable, currentPlaylist);
         callback(currentPlaylist);
-        console.log(res);
     });
 
 };
@@ -192,16 +221,23 @@ loadMediaTable = function (dynatable, filetable, url) {
     });
 
 };
+updateFileMetaInfo = function (file) {
+    var url = '/api/1.0/music/filedata/' + file;
+    $.getJSON(url, function (res) {
+        console.log(res);
+        $('[data-role="meta-filename"]').html(res.filename);
+        $('[data-role="meta-title"]').html(res.data.title.replace(/[^ -~]+/g, ""));
+        $('[data-role="meta-artist"]').html(res.data.artist.replace(/[^ -~]+/g, ""));
+        $('[data-role="meta-album"]').html(res.data.album.replace(/[^ -~]+/g, ""));
+    });
+
+};
 playFile = function (file, myPlayer, currentlyPlaying) {
     var url = 'http://127.0.0.1:1337/?path=' + file;
     currentlyPlaying.file = file;
     myPlayer.src({src: url});
     myPlayer.play();
-    var url = '/api/1.0/music/filedata/'+file;
-    $.getJSON(url, function (res) {
-        console.log(res);
-    });
-
+    updateFileMetaInfo(file);
 
     $('[data-file-type="fileList"]').removeClass('bold');
     $('[data-file="' + file + '"]').addClass('bold');
@@ -211,6 +247,7 @@ playFileFromList = function (file, myPlayer, currentlyPlaying) {
     currentlyPlaying.file = file;
     myPlayer.src({src: url});
     myPlayer.play();
+    updateFileMetaInfo(file);
     $('[data-file-type="list"]').removeClass('bold');
     $('[data-list-index="' + currentlyPlaying.position + '"]').addClass('bold');
 };
@@ -223,8 +260,8 @@ stopPlaylist = function (myPlayer) {
     myPlayer.pause();
 };
 playNext = function (currentPlaylist, currentlyPlaying, myPlayer) {
-    var nextPosition = currentlyPlaying.position + 1;
-    if (nextPosition >= currentPlaylist.length) {
+    var nextPosition = parseInt(currentlyPlaying.position) + 1;
+    if (nextPosition > currentPlaylist.length) {
         console.log('Playlist ended');
 
     } else {
@@ -255,6 +292,78 @@ savePlaylist = function () {
     $.post(url, formData, function (res) {
         alert(res);
     });
+};
+clearSelection = function () {
+    $('[data-role="total-album"]').html('');
+    $('[data-role="total-artist"]').html('');
+    $('[data-role="files-result-table"] tbody').empty();
+};
+searchCollection = function () {
+    var query = $('[data-role="search-top"]').val();
+    var url = '/api/1.0/music/search/' + query;
+    $.getJSON(url, function (res) {
+        var numberAlbums = res.numberAlbums;
+        $('[data-role="total-album"]').html('(' + numberAlbums + ')');
+        $('[data-role="total-artist"]').html('(' + res.numberArtists + ')');
+
+
+        var filesTable = $('[data-role="files-result-table"] tbody');
+        filesTable.empty();
+        $('[data-role="search-debug"]').html('');
+        res.allResults.forEach(function (resRow) {
+            var rowHTML = '<tr data-file-type="fileList" data-role="selectFileFromCollection" data-file="' + resRow.encPath + '"><td>' +
+                resRow.title
+                + '</td><td>' + resRow.artist
+                + '</td><td>' + resRow.album + '</td>'
+                + '</td>';
+            filesTable.append(rowHTML);
+        });
+        var albumTable = $('[data-role="albums-result-table"] tbody');
+        albumTable.empty();
+        res.albums.forEach(function (albumRow) {
+            var rowHTML = '<tr data-file-type="fileList" data-role="selectAlbum" data-album="' + albumRow.name + '"><td>' +
+                albumRow.name
+                + '</td><td>' + albumRow.number
+                + '</td><td></td>'
+                + '</td>';
+            console.log(albumRow);
+            albumTable.append(rowHTML);
+        });
+    });
+
+};
+
+selectSection = function (section) {
+    if (section === 'collection') {
+        searchCollection();
+    }
+    $('[data-role="pane"]').hide();
+    $('[data-pane="' + section + '"]').show();
+    $('[data-role="selectSection"]').addClass('button-transparent');
+    $('[data-section="' + section + '"]').removeClass('button-transparent');
+};
+
+selectCollectionSection = function (section) {
+    $('[data-role="collection-section"]').addClass('button-outline');
+    $('[data-collection-section="' + section + '"]').removeClass('button-outline');
+    $('[data-collection-section="' + section + '"]').addClass('button');
+    switch (section) {
+        case 'albums':
+            $('[data-role="files-result-table"]').hide();
+            $('[data-role="artists-result-table"]').hide();
+            $('[data-role="albums-result-table"]').show();
+            break;
+        case 'files':
+            $('[data-role="files-result-table"]').show();
+            $('[data-role="artists-result-table"]').hide();
+            $('[data-role="albums-result-table"]').hide();
+            break;
+        case 'artists':
+            $('[data-role="files-result-table"]').hide();
+            $('[data-role="artists-result-table"]').show();
+            $('[data-role="albums-result-table"]').hide();
+            break;
+    }
 };
 
 

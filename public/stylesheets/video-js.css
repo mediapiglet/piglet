@@ -75,6 +75,7 @@ Create your own skin at http://designer.videojs.com
 }
 
 .vjs-default-skin.vjs-has-started.vjs-user-inactive.vjs-playing .vjs-control-bar {
+    /*
     display: block;
     visibility: hidden;
     opacity: 0;
@@ -82,6 +83,7 @@ Create your own skin at http://designer.videojs.com
     -moz-transition: visibility 1s, opacity 1s;
     -o-transition: visibility 1s, opacity 1s;
     transition: visibility 1s, opacity 1s
+    */
 }
 
 .vjs-default-skin.vjs-controls-disabled .vjs-control-bar {

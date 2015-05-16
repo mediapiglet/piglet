@@ -8,7 +8,7 @@ process.on('uncaughtException', function (exception) {
 });
 
 var config = {
-    basePath : '/data'
+    basePath : '/media/marcus/Elements/mdt'
 };
 
 
