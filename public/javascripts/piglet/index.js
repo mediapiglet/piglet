@@ -31,9 +31,40 @@ $(document).ready(function () {
      ]
      });
      */
-    var encPath = 'L21lZGlhL21hcmN1cy9FbGVtZW50cy9tZHQvbXAz'; // /media/marcus/Elements/mdt/mp3'
-    // var encPath = 'L2RhdGE='; // /data
+    //var encPath = 'L21lZGlhL21hcmN1cy9FbGVtZW50cy9tZHQvbXAz'; // /media/marcus/Elements/mdt/mp3'
+    var encPath = 'L2RhdGE='; // /data
     var url = '/api/1.0/media/list/' + encPath;
+
+    $('body').keypress(function (e) {
+        var key = $(e.which);
+        var keyPressed = key[0];
+        console.log(keyPressed);
+        switch (keyPressed) {
+            case 112:
+                myPlayer.play();
+                break;
+            case 32:
+                e.preventDefault();
+                var isPlaying = myPlayer.paused();
+                if (isPlaying) {
+                    myPlayer.play();
+                } else {
+                    myPlayer.pause();
+                }
+                break;
+            case 102:
+                var isFullscreen = myPlayer.isFullscreen();
+                if (isFullscreen) {
+                    myPlayer.exitFullscreen();
+                } else {
+                    myPlayer.requestFullscreen();
+                }
+                break;
+            default:
+                break;
+
+        }
+    });
 
     $('body').delegate('[data-role="doLogin"]', 'click', function () {
         var username = $('[data-role="username"]').val();
@@ -109,6 +140,11 @@ $(document).ready(function () {
     });
 
 
+    $('body').delegate('[data-role="removeFileFromPlaylist"]', 'click', function () {
+        var playIndex = $(this).attr('data-list-index');
+        console.log(currentPlaylist);
+        removeFileFromPlaylist(playIndex, currentPlaylist, playlisttable);
+    });
     $('body').delegate('[data-role="selectAlbum"]', 'click', function () {
     });
     $('body').delegate('[data-role="selectFile"]', 'click', function () {
@@ -149,7 +185,7 @@ $(document).ready(function () {
     });
 
 
-    $('#fileTable').delegate('[data-role="addToPlaylist"]', 'click', function () {
+    $('body').delegate('[data-role="addToPlaylist"]', 'click', function () {
         var selectedFile = $(this).attr('data-file');
         var selectedFilename = $(this).attr('data-filename');
         var fileObject = {};
@@ -169,7 +205,6 @@ $(document).ready(function () {
                 .text(res[i].name));
 
         }
-        // console.log(res.playlists);
     });
     $('[data-role="listPlaylists"]').change(function () {
         var playlistId = $(this).val();
@@ -186,6 +221,14 @@ $(document).ready(function () {
      }, 1000);
      */
 });
+removeFileFromPlaylist = function (fileIndex, currentPlaylist, playlisttable) {
+    console.log(currentPlaylist);
+    console.log('Removeing file');
+    console.log(fileIndex);
+    currentPlaylist.splice(fileIndex, 1);
+    console.log(currentPlaylist);
+    loadPlaylistTable(playlisttable, currentPlaylist);
+};
 loadPlaylist = function (playlistId, currentPlaylist, playlisttable, callback) {
     var url = '/api/1.0/playlists/load/' + playlistId;
     $.getJSON(url, function (res) {
@@ -197,20 +240,26 @@ loadPlaylist = function (playlistId, currentPlaylist, playlisttable, callback) {
 
 };
 loadPlaylistTable = function (playlisttable, currentPlaylist) {
+    var tableData = [];
     if (currentPlaylist.length > 0) {
-        var tableData = [];
         for (var i = 0; i < currentPlaylist.length; i++) {
             var thisFile = currentPlaylist[i];
             var tableRow = {};
             tableRow.file = '<span data-file-type="list" data-list-index="' + i + '" data-role="selectFileFromList" data-file="' + thisFile.file + '"> ' +
             thisFile.filename + '</span><input type="hidden" name="filenames" value="' + thisFile.filename + '" /><input type="hidden" name="files" value="' + thisFile.file + '" />';
-            tableRow.details = '<i class=icon ion-minus-circle></i> Remove'
+            tableRow.options = '<span data-list-index="' + i
+            + '" data-role="removeFileFromPlaylist" data-file="' + thisFile.file
+            + '"><i class="icon ion-minus"></i></span>';
             tableData.push(tableRow);
         }
         playlisttable.settings.dataset.originalRecords = tableData;
         playlisttable.process();
+    } else {
+        playlisttable.settings.dataset.originalRecords = tableData;
+        playlisttable.process();
+
     }
-}
+};
 
 loadMediaTable = function (dynatable, filetable, url) {
     $.getJSON(url, function (res) {
@@ -224,7 +273,6 @@ loadMediaTable = function (dynatable, filetable, url) {
 updateFileMetaInfo = function (file) {
     var url = '/api/1.0/music/filedata/' + file;
     $.getJSON(url, function (res) {
-        console.log(res);
         $('[data-role="meta-filename"]').html(res.filename);
         $('[data-role="meta-title"]').html(res.data.title.replace(/[^ -~]+/g, ""));
         $('[data-role="meta-artist"]').html(res.data.artist.replace(/[^ -~]+/g, ""));
@@ -249,6 +297,8 @@ playFileFromList = function (file, myPlayer, currentlyPlaying) {
     myPlayer.play();
     updateFileMetaInfo(file);
     $('[data-file-type="list"]').removeClass('bold');
+
+    $('[data-role="selectFile"]').removeClass('bold');
     $('[data-list-index="' + currentlyPlaying.position + '"]').addClass('bold');
 };
 playPlaylist = function (currentPlaylist, currentlyPlaying, myPlayer) {
@@ -261,7 +311,7 @@ stopPlaylist = function (myPlayer) {
 };
 playNext = function (currentPlaylist, currentlyPlaying, myPlayer) {
     var nextPosition = parseInt(currentlyPlaying.position) + 1;
-    if (nextPosition > currentPlaylist.length) {
+    if (nextPosition >= currentPlaylist.length) {
         console.log('Playlist ended');
 
     } else {
@@ -288,9 +338,8 @@ playPrevious = function (currentPlaylist, currentlyPlaying, myPlayer) {
 savePlaylist = function () {
     var url = '/api/1.0/playlists/save';
     var formData = $('#savePlaylistForm').serialize();
-    console.log(formData);
     $.post(url, formData, function (res) {
-        alert(res);
+        alert('Playlist saved');
     });
 };
 clearSelection = function () {
@@ -311,10 +360,12 @@ searchCollection = function () {
         filesTable.empty();
         $('[data-role="search-debug"]').html('');
         res.allResults.forEach(function (resRow) {
-            var rowHTML = '<tr data-file-type="fileList" data-role="selectFileFromCollection" data-file="' + resRow.encPath + '"><td>' +
+            resRow.details = "<span data-role='addToPlaylist' data-file='" + resRow.encPath + "' data-filename='" + resRow.filename + "'><i class='icon ion-plus'> </i></span";
+            var rowHTML = '<tr><td data-file-type="fileList" data-role="selectFileFromCollection" data-file="' + resRow.encPath + '">' +
                 resRow.title
                 + '</td><td>' + resRow.artist
                 + '</td><td>' + resRow.album + '</td>'
+                + '</td><td>' + resRow.details
                 + '</td>';
             filesTable.append(rowHTML);
         });
@@ -324,9 +375,8 @@ searchCollection = function () {
             var rowHTML = '<tr data-file-type="fileList" data-role="selectAlbum" data-album="' + albumRow.name + '"><td>' +
                 albumRow.name
                 + '</td><td>' + albumRow.number
-                + '</td><td></td>'
+                + '</td><td><i class="icon ion-plus"> </i>'
                 + '</td>';
-            console.log(albumRow);
             albumTable.append(rowHTML);
         });
     });
@@ -338,6 +388,10 @@ selectSection = function (section) {
         searchCollection();
     }
     $('[data-role="pane"]').hide();
+    if (section !== 'home') {
+        $('[data-pane="playlist"]').show();
+
+    }
     $('[data-pane="' + section + '"]').show();
     $('[data-role="selectSection"]').addClass('button-transparent');
     $('[data-section="' + section + '"]').removeClass('button-transparent');

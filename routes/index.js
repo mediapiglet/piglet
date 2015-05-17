@@ -87,7 +87,7 @@ router.get('/api/:version/music/filedata/:encPath', function (req, res, next) {
         if (err) {
             console.error(err);
         }
-        var playlistCollection = db.collection('music_files_meta');
+        var playlistCollection = db.collection('music_files_meta_laptop');
         playlistCollection.findOne({
             encPath: encPath
         }, function (err, fileData) {
@@ -111,7 +111,7 @@ router.get('/api/:version/music/search/:query/:artist?', function (req, res, nex
             console.error(err);
             return false;
         }
-        var metaCollection = db.collection('music_files_meta');
+        var metaCollection = db.collection('music_files_meta_laptop');
         var returnArray = [];
         metaCollection.aggregate([
             {
@@ -137,7 +137,7 @@ router.get('/api/:version/music/search/:query/:artist?', function (req, res, nex
             } else {
                 var albums = {}, artists = {};
                 var albumArray = [];
-                var numberAlbums= 0, numberArtists = 0;
+                var numberAlbums = 0, numberArtists = 0;
                 resArray.forEach(function (metaRow) {
                     var thisMeta = {};
                     thisMeta._id = metaRow.path;
@@ -146,23 +146,23 @@ router.get('/api/:version/music/search/:query/:artist?', function (req, res, nex
                     thisMeta.title = metaRow.data.title;
                     thisMeta.album = metaRow.data.album;
                     thisMeta.artist = metaRow.data.artist;
-                    if(thisMeta.title === '' || (!thisMeta.title)) {
+                    if (thisMeta.title === '' || (!thisMeta.title)) {
                         thisMeta.title = thisMeta.filename;
                     }
-                    if(thisMeta.album === '' || (!thisMeta.album)) {
+                    if (thisMeta.album === '' || (!thisMeta.album)) {
                         thisMeta.album = 'Unknown';
                     }
-                    if(thisMeta.artist === '' || (!thisMeta.artist)) {
+                    if (thisMeta.artist === '' || (!thisMeta.artist)) {
                         thisMeta.artist = '-';
                     }
                     var album = thisMeta.album;
                     var artist = thisMeta.artist;
-                    if(!albums[album]) {
-                        albums[album]=0;
+                    if (!albums[album]) {
+                        albums[album] = 0;
                         numberAlbums++;
                     }
-                    if(!artists[artist]) {
-                        artists[artist]=0;
+                    if (!artists[artist]) {
+                        artists[artist] = 0;
                         numberArtists++;
                     }
                     albums[album]++;
@@ -290,11 +290,18 @@ router.get('/api/:version/media/list/:filePath/:previousPath?', function (req, r
     }
     if (req.params.previousPath) {
         var backDir = {};
-        response.parent = getParent(response.filePath);
-        response.previousPath = new Buffer(response.parent).toString('base64'); // Ta-da
+        console.log('Back check');
+        console.log(response.filePath);
+        //if (response.filePath !== '/media/marcus/Elements/mdt/mp3') {
+        if (response.filePath !== '/data') {
 
-        backDir.folder = "<span data-role='selectDir' data-dir='" + response.previousPath + "' data-parent='" + req.params.previousPath + "' ><i class='icon ion-arrow-left-a'> </i> Back </span";
-        response.dirRecords.push(backDir);
+
+            response.parent = getParent(response.filePath);
+            response.previousPath = new Buffer(response.parent).toString('base64'); // Ta-da
+
+            backDir.folder = "<span data-role='selectDir' data-dir='" + response.previousPath + "' data-parent='" + req.params.previousPath + "' ><i class='icon ion-arrow-left-a'> </i> Back </span";
+            response.dirRecords.push(backDir);
+        }
     }
 
 
@@ -307,7 +314,7 @@ router.get('/api/:version/media/list/:filePath/:previousPath?', function (req, r
             var pathBuffer = new Buffer(dirRow.fullname);
             var pathBase64 = pathBuffer.toString('base64');
             thisDir.folder = "<span data-role='selectDir' data-dir='" + pathBase64 + "' data-parent='" + req.params.filePath + "'><i class='icon ion-folder'> </i>" + dirRow.name + "</span";
-            thisDir.options = "<a href='!#'>download</a>";
+            thisDir.options = "";
             response.dirRecords.push(thisDir);
         });
         currentLists.files.forEach(function (fileRow) {
@@ -320,8 +327,8 @@ router.get('/api/:version/media/list/:filePath/:previousPath?', function (req, r
             var thisFile = {};
             var pathBuffer = new Buffer(fileRow.fullname);
             var pathBase64 = pathBuffer.toString('base64');
-            thisFile.file = "<span data-file-type='fileList' data-role='selectFile' data-file='" + pathBase64 + "' data-parent='" + req.params.filePath + "'><i class='icon ion-document'> </i>" + fileRow.name + "</span";
-            thisFile.details = "<span data-role='addToPlaylist' data-file='" + pathBase64 + "' data-filename='" + fileRow.name + "' data-parent='" + req.params.filePath + "'><i class='icon ion-plus-circled'> </i></span";
+            thisFile.file = "<span data-file-type='fileList' class='selectfile' data-role='selectFile' data-file='" + pathBase64 + "' data-parent='" + req.params.filePath + "'>" + fileRow.name + "</span";
+            thisFile.playlist = "<span data-role='addToPlaylist' data-file='" + pathBase64 + "' data-filename='" + fileRow.name + "' data-parent='" + req.params.filePath + "'><i class='icon ion-plus'> </i></span";
             response.fileRecords.push(thisFile);
         });
         res.setHeader('Content-Type', 'application/json');

@@ -25,18 +25,13 @@
             float: right;
         }
 
+        .icon, .selectfile {
+            cursor: pointer;
+        }
 
-        .meta-info {
-            position: absolute;
-            width: 98%;
-            color: #fff;
-            padding: 2px 5px 5px 5px;
-            border-radius: 3px;
-            top: 5px;
-            left: 5px;
-            text-align: center;
-            font-size: 1.8em;
-
+        .collection-results {
+            height: 99%;
+            overflow: hidden;
         }
     </style>
 </head>
@@ -68,16 +63,16 @@
 </div>
 <div class="container" data-role="pane" data-pane="home">
     <header class="center px3 py4 white bg-gray bg-cover bg-center"
-            style="background-image: url(http://wondersofdisney.yolasite.com/resources/winniethepooh/poohnpiglet/tiredpooh&piglet.igif)">
+            style="background-image: url(/images/piglet.jpg)">
         <h1 class="h1 h0-responsive caps mt4 mb0 regular">Piglet</h1>
 
         <p class="h3">Media - Easy</p>
     </header>
 
 </div>
-<div class="container hidden" data-role="pane" data-pane="browse">
+<div class="container">
     <div class="clearfix">
-        <div class="sm-col sm-col-4">
+        <div class="sm-col sm-col-4 hidden" id="testW" data-role="pane" data-pane="browse">
 
             <table id="mediaTable" class="table-light">
                 <thead>
@@ -88,48 +83,18 @@
                 <tbody>
             </table>
         </div>
-        <div class="sm-col sm-col-5">
+        <div class="sm-col sm-col-5 hidden" data-role="pane" data-pane="browse">
             <table id="fileTable" class="table-light">
                 <thead>
                 <tr>
                     <th>File</th>
-                    <th>Details</th>
+                    <th>Playlist</th>
                 </tr>
                 </thead>
                 <tbody>
             </table>
         </div>
-        <div class="sm-col sm-col-3">
-            <select data-role="listPlaylists" class="block full-width mb1 field-light">
-                <option></option>
-            </select>
-
-            <form id="savePlaylistForm" method="post">
-                <h3>
-                    <i data-role="stopPlaylist" class="icon ion-pause"> </i>
-                    <i data-role="startPlaylist" class="icon ion-play"> </i>
-                    <i data-role="previousPlaylist" class="icon ion-skip-backward"> </i>
-                    <i data-role="nextPlaylist" class="icon ion-skip-forward"> </i>
-                    <input data-role="playlistName" placeholder="Playlist name" name="playlistName" type="text"
-                           class="field-light">
-                    <button type="button" data-role="savePlaylist" class="button">Save</button>
-                </h3>
-                <table id="playlistTable" class="table-light">
-                    <thead>
-                    <tr>
-                        <th>File</th>
-                        <th>Options</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                </table>
-            </form>
-        </div>
-    </div>
-</div>
-<div class="container hidden" data-role="pane" data-pane="collection">
-    <div class="clearfix">
-        <div class="sm-col sm-col-6">
+        <div class="sm-col sm-col-9 hidden" data-role="pane" data-pane="collection">
             <div class="inline-block clearfix">
                 <button type="button" data-role="collection-section" data-collection-section="files"
                         class="left button x-group-item rounded-left">Files
@@ -141,14 +106,17 @@
                         class="left button-outline x-group-item rounded-right">Artists <span
                         data-role="total-artist"></span></button>
             </div>
-            <div data-role="collection-results">
-                <div class="overflow-scroll result-table">
+            <div data-role="collection-results" class="collection-results">
+
+
+                <div class="result-table">
                     <table data-role="files-result-table">
                         <thead>
                         <tr>
                             <th>Title</th>
                             <th>Artist</th>
                             <th>Album</th>
+                            <th>Playlist</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -161,6 +129,7 @@
                         <tr>
                             <th>Album</th>
                             <th>Number Files</th>
+                            <th>Playlist</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -185,10 +154,36 @@
                 </div>
             </div>
         </div>
-        <div class="sm-col sm-col-6">
-            Here
+        <div class="sm-col sm-col-3 hidden" data-role="pane" data-pane="playlist">
+
+
+            <select data-role="listPlaylists" class="block full-width mb1 field-light">
+                <option></option>
+            </select>
+
+            <form id="savePlaylistForm" method="post">
+                <h3>
+                    <i data-role="stopPlaylist" class="icon ion-pause"> </i>
+                    <i data-role="startPlaylist" class="icon ion-play"> </i>
+                    <i data-role="previousPlaylist" class="icon ion-skip-backward"> </i>
+                    <i data-role="nextPlaylist" class="icon ion-skip-forward"> </i>
+                    <input data-role="playlistName" placeholder="Playlist name" name="playlistName" type="text"
+                           class="field-light">
+                    <button type="button" data-role="savePlaylist" class="button button-small right">Save</button>
+                </h3>
+                <table id="playlistTable" class="table-light">
+                    <thead>
+                    <tr>
+                        <th>File</th>
+                        <th>Options</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                </table>
+            </form>
         </div>
     </div>
+
 </div>
 </body>
 </html>
