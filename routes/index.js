@@ -366,6 +366,7 @@ function scanDir(pathName, callback) {
     console.log(pathName);
     fs.readdir(pathName, function (err, fileArray) {
         var isDir = false;
+        var isSym = false;
         var dirCount = 0;
         var fileCount = 0;
         var dirList = [];
@@ -375,8 +376,9 @@ function scanDir(pathName, callback) {
             var thisFile = {};
             thisFile.name = file;
             thisFile.fullname = fullPath;
-            isDir = fs.lstatSync(fullPath).isDirectory();
-            if (isDir) {
+            isDir = fs.lstatSync(fullPath).isDirectory()
+            isSym = fs.lstatSync(fullPath).isSymbolicLink();
+            if (isDir || isSym) {
                 dirCount++;
                 dirList.push(thisFile);
             } else {
