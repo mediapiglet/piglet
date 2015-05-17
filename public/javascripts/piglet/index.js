@@ -1,6 +1,5 @@
 $(document).ready(function () {
 
-    var topSearchField = $('[data-role="search-top"]');
     var dynatable = '';
     var filetable = '',
         playlisttable = '';
@@ -9,6 +8,7 @@ $(document).ready(function () {
     currentlyPlaying.position = 0;
     var myPlayer = videojs('mainVideo');
     videojs("mainVideo").ready(function () {
+        this.hostAddress = '192.168.0.14';
         this.on("ended", function () {
             playNext(currentPlaylist, currentlyPlaying, this)
         });
@@ -32,8 +32,7 @@ $(document).ready(function () {
      });
      */
     //var encPath = 'L21lZGlhL21hcmN1cy9FbGVtZW50cy9tZHQvbXAz'; // /media/marcus/Elements/mdt/mp3'
-    var encPath = 'L2RhdGE='; // /data
-    var url = '/api/1.0/media/list/' + encPath;
+    var url = '/api/1.0/media/list/base';
 
     $('body').keypress(function (e) {
         var key = $(e.which);
@@ -281,7 +280,7 @@ updateFileMetaInfo = function (file) {
 
 };
 playFile = function (file, myPlayer, currentlyPlaying) {
-    var url = 'http://127.0.0.1:1337/?path=' + file;
+    var url = 'http://'+myPlayer.hostAddress+':1337/?path=' + file;
     currentlyPlaying.file = file;
     myPlayer.src({src: url});
     myPlayer.play();
@@ -291,7 +290,7 @@ playFile = function (file, myPlayer, currentlyPlaying) {
     $('[data-file="' + file + '"]').addClass('bold');
 };
 playFileFromList = function (file, myPlayer, currentlyPlaying) {
-    var url = 'http://127.0.0.1:1337/?path=' + file;
+    var url = 'http://'+myPlayer.hostAddress+':1337/?path=' + file;
     currentlyPlaying.file = file;
     myPlayer.src({src: url});
     myPlayer.play();

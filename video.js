@@ -35,5 +35,5 @@ http.createServer(function (req, res) {
         res.writeHead(200, { 'Content-Length': total, 'Content-Type': 'video/avi' });
         fs.createReadStream(path).pipe(res);
     }
-}).listen(1337, '127.0.0.1');
+}).listen(1337, '192.168.0.14');
 console.log('Server running at http://127.0.0.1:1337/');

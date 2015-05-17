@@ -4,11 +4,8 @@ var router = express.Router();
 var MongoClient = require('mongodb');
 var ObjectId = require('mongodb').ObjectID;
 
-
-// Some objects to handle state
-var currentState = {
-    currentDir: 'data'
-};
+var config = require('../config/piglet.json');
+console.log('Starting Piglet with base path: '+config.piglet.mediaDirectory);
 
 
 /* GET home page. */
@@ -16,8 +13,7 @@ router.get('/', function (req, res, next) {
 
     console.log(req.session);
     res.render('index.html', {
-        title: 'Piglet',
-        currentDir: currentState.currentDir
+        title: 'Piglet'
     });
 });
 router.get('/video', function (req, res, next) {
@@ -283,6 +279,12 @@ router.get('/api/:version/media/list/:filePath/:previousPath?', function (req, r
             requestParams: req.params
         }
     };
+    if(req.params.filePath==='base') {
+        var pathBuffer = new Buffer(config.piglet.mediaDirectory);
+        var pathBase64 = pathBuffer.toString('base64');
+        req.params.filePath = pathBase64;
+
+    }
     response.dirRecords = [];
     response.fileRecords = [];
     if (req.params.filePath) {
@@ -290,10 +292,8 @@ router.get('/api/:version/media/list/:filePath/:previousPath?', function (req, r
     }
     if (req.params.previousPath) {
         var backDir = {};
-        console.log('Back check');
-        console.log(response.filePath);
         //if (response.filePath !== '/media/marcus/Elements/mdt/mp3') {
-        if (response.filePath !== '/data') {
+        if (response.filePath !== config.piglet.mediaDirectory) {
 
 
             response.parent = getParent(response.filePath);
