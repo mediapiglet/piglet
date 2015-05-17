@@ -356,8 +356,8 @@ searchCollection = function () {
         $('[data-role="search-debug"]').html('');
         res.allResults.forEach(function (resRow) {
             resRow.details = "<span data-role='addToPlaylist' data-file='" + resRow.encPath + "' data-filename='" + resRow.filename + "'><i class='icon ion-plus'> </i></span";
-            var rowHTML = '<tr><td data-file-type="fileList" data-role="selectFileFromCollection" data-file="' + resRow.encPath + '">' +
-                resRow.title
+            var rowHTML = '<tr><td><span data-file-type="fileList" class="selectFile" data-role="selectFileFromCollection" data-file="' + resRow.encPath + '"> <i class="icon ion-play" > </i> ' +
+                resRow.title+'</span'+
                 + '</td><td>' + resRow.artist
                 + '</td><td>' + resRow.album + '</td>'
                 + '</td><td>' + resRow.details
