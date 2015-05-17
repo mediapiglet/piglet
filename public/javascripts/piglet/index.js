@@ -10,7 +10,13 @@ $(document).ready(function () {
     videojs("mainVideo").ready(function () {
         this.hostAddress = '192.168.0.14';
         this.on("ended", function () {
-            playNext(currentPlaylist, currentlyPlaying, this)
+            if (currentlyPlaying.type === 'file') {
+                var nextPosition = parseFloat(currentlyPlaying.position) + 1;
+                var nextFile = $('[data-file-index="' + nextPosition + '"]').attr('data-file');
+                playFile(nextFile, this, currentlyPlaying);
+            } else {
+                playNext(currentPlaylist, currentlyPlaying, this)
+            }
         });
         this.on("play", function () {
             console.log('Playing file');
@@ -149,20 +155,23 @@ $(document).ready(function () {
     });
     $('body').delegate('[data-role="selectFile"]', 'click', function () {
         var selectedFile = $(this).attr('data-file');
+        var listIndex = $(this).attr('data-file-index');
+        currentlyPlaying.type = 'file';
+        currentlyPlaying.position = listIndex;
         playFile(selectedFile, myPlayer, currentlyPlaying);
     });
-    $('body').delegate('[data-role="selectFileFromCollection"]', 'click', function () {
-        var selectedFile = $(this).attr('data-file');
-        playFile(selectedFile, myPlayer, currentlyPlaying);
-    });
-
     $('body').delegate('[data-role="selectFileFromList"]', 'click', function () {
         var selectedFile = $(this).attr('data-file');
+        currentlyPlaying.type = 'playlist';
         currentlyPlaying.position = $(this).attr('data-list-index');
         playFileFromList(selectedFile, myPlayer, currentlyPlaying);
     });
 
 
+    $('body').delegate('[data-role="selectFileFromCollection"]', 'click', function () {
+        var selectedFile = $(this).attr('data-file');
+        playFile(selectedFile, myPlayer, currentlyPlaying);
+    });
     $('body').delegate('[data-role="startPlaylist"]', 'click', function () {
         playPlaylist(currentPlaylist, currentlyPlaying, myPlayer);
     });
@@ -275,7 +284,8 @@ updateFileMetaInfo = function (file) {
 
 };
 playFile = function (file, myPlayer, currentlyPlaying) {
-    var url = 'http://' + myPlayer.hostAddress + ':1337/?path=' + file;
+    var playerURL = window.location.host;
+    var url = 'http://' + playerURL + ':1337/?path=' + file;
     currentlyPlaying.file = file;
     myPlayer.src({src: url});
     myPlayer.play();
@@ -285,7 +295,8 @@ playFile = function (file, myPlayer, currentlyPlaying) {
     $('[data-file="' + file + '"]').addClass('bold');
 };
 playFileFromList = function (file, myPlayer, currentlyPlaying) {
-    var url = 'http://' + myPlayer.hostAddress + ':1337/?path=' + file;
+    var playerURL = window.location.host;
+    var url = 'http://' + playerURL + ':1337/?path=' + file;
     currentlyPlaying.file = file;
     myPlayer.src({src: url});
     myPlayer.play();
@@ -357,8 +368,7 @@ searchCollection = function () {
         res.allResults.forEach(function (resRow) {
             resRow.details = "<span data-role='addToPlaylist' data-file='" + resRow.encPath + "' data-filename='" + resRow.filename + "'><i class='icon ion-plus'> </i></span";
             var rowHTML = '<tr><td><span data-file-type="fileList" class="selectFile" data-role="selectFileFromCollection" data-file="' + resRow.encPath + '"> <i class="icon ion-play" > </i> ' +
-                resRow.title+'</span'+
-                + '</td><td>' + resRow.artist
+                resRow.title + '</span' + +'</td><td>' + resRow.artist
                 + '</td><td>' + resRow.album + '</td>'
                 + '</td><td>' + resRow.details
                 + '</td>';

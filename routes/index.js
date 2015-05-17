@@ -319,6 +319,7 @@ router.get('/api/:version/media/list/:filePath/:previousPath?', function (req, r
             thisDir.options = "";
             response.dirRecords.push(thisDir);
         });
+        var i = 0;
         currentLists.files.forEach(function (fileRow) {
             fileRow.name = fileRow.name.replace(/\.mp3/gi, "Zmp3");
             fileRow.name = fileRow.name.replace(/\.mp4/gi, "Zmp4");
@@ -329,9 +330,10 @@ router.get('/api/:version/media/list/:filePath/:previousPath?', function (req, r
             var thisFile = {};
             var pathBuffer = new Buffer(fileRow.fullname);
             var pathBase64 = pathBuffer.toString('base64');
-            thisFile.file = "<span data-file-type='fileList' class='selectfile' data-role='selectFile' data-file='" + pathBase64 + "' data-parent='" + req.params.filePath + "'>" + fileRow.name + "</span";
+            thisFile.file = "<span data-file-type='fileList' class='selectfile' data-role='selectFile' data-file='" + pathBase64 + "' data-parent='" + req.params.filePath + "' data-file-index='"+i+"'>" + fileRow.name + "</span";
             thisFile.playlist = "<span data-role='addToPlaylist' data-file='" + pathBase64 + "' data-filename='" + fileRow.name + "' data-parent='" + req.params.filePath + "'><i class='icon ion-plus'> </i></span";
             response.fileRecords.push(thisFile);
+            i++;
         });
         res.setHeader('Content-Type', 'application/json');
         res.end(
@@ -378,7 +380,7 @@ function scanDir(pathName, callback) {
             var thisFile = {};
             thisFile.name = file;
             thisFile.fullname = fullPath;
-            isDir = fs.lstatSync(fullPath).isDirectory()
+            isDir = fs.lstatSync(fullPath).isDirectory();
             isSym = fs.lstatSync(fullPath).isSymbolicLink();
             if (isDir || isSym) {
                 dirCount++;
