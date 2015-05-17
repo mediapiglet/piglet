@@ -11,12 +11,12 @@ var config = require('./config/piglet.json');
 console.log(config.piglet.mediaDirectory);
 
 saveId3 = function () {
+
     MongoClient.connect("mongodb://localhost:27017/piglet", function (err, db) {
         if (err) {
             console.error(err);
         }
-        var filesCollection = db.collection('music_files');
-        var filesCur = filesCollection.find();
+        var dbConn = db;
 
 
         var total = 0;
@@ -25,9 +25,13 @@ saveId3 = function () {
             if (err) {
                 console.error(err);
             }
-            filesCur.forEach(function (file) {
-                if (file) {
+            var filesCollection = dbConn.collection('music_files');
+            filesCollection.find({}).toArray(function (err, filesArray) {
+                if (err) {
+                    console.error(err);
+                }
 
+                filesArray.forEach(function (file) {
                     id3({file: file.path, type: id3.OPEN_LOCAL}, function (err, tags) {
                         if (err) {
                             console.log(err);
@@ -62,9 +66,8 @@ saveId3 = function () {
                             total++;
                         });
                     });
-                } else {
-                    console.log('Saved ID3 tags');
-                }
+                });
+                console.log('Saved ID3 tags');
             });
         });
     });
@@ -80,8 +83,11 @@ savePaths = function () {
             console.error(err);
         }
 
-        var filesCollection = db.collection('music_files');
+        db.createCollection('playlists', function (err, info) {
+        });
+        var dbConn = db;
 
+        var filesCollection = db.collection('music_files');
         // empty
         console.log('emptying');
         filesCollection.remove({}, {}, function (err, removeResult) {
@@ -91,12 +97,12 @@ savePaths = function () {
             recursive(config.piglet.mediaDirectory, function (err, files) {
                 // Files is an array of filename
                 var totalFiles = files.length;
+                console.log(totalFiles);
                 var savedMusicFiles = 0;
                 // console.log('Found '+ totalFiles+' files');
+                var filesCollection = dbConn.collection('music_files');
                 files.forEach(function (file) {
                     if (!file) {
-                        saveId3();
-
                     }
                     var thisExt = file.split('.').pop();
 
@@ -114,13 +120,12 @@ savePaths = function () {
                             filesCollection.insertOne(thisFile, {}, function (err, doneData) {
 
                             });
-                            totalFiles--;
-                            if (totalFiles === 0) {
-                            }
                             break;
                     }
 
                 });
+                console.log('Done saving path');
+                saveId3();
             });
         });
     });

@@ -83,7 +83,7 @@ router.get('/api/:version/music/filedata/:encPath', function (req, res, next) {
         if (err) {
             console.error(err);
         }
-        var playlistCollection = db.collection('music_files_meta_laptop');
+        var playlistCollection = db.collection('music_files_meta');
         playlistCollection.findOne({
             encPath: encPath
         }, function (err, fileData) {
@@ -107,7 +107,7 @@ router.get('/api/:version/music/search/:query/:artist?', function (req, res, nex
             console.error(err);
             return false;
         }
-        var metaCollection = db.collection('music_files_meta_laptop');
+        var metaCollection = db.collection('music_files_meta');
         var returnArray = [];
         metaCollection.aggregate([
             {
