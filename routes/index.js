@@ -238,7 +238,9 @@ router.post('/api/:version/playlists/save', function (req, res, next) {
             thisFile.filename = req.body.filenames[i];
             playlist.files.push(thisFile);
         }
-        playlistCollection.insertOne(playlist, function (err, result) {
+        console.log('Saving playlist');
+        console.log(playlist);
+        playlistCollection.update({name: req.body.playlistName},playlist,{upsert:true}, function (err, result) {
             if (err) {
                 console.error(err);
             }

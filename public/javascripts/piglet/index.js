@@ -35,33 +35,35 @@ $(document).ready(function () {
     var url = '/api/1.0/media/list/base';
 
     $('body').keypress(function (e) {
-        var key = $(e.which);
-        var keyPressed = key[0];
-        console.log(keyPressed);
-        switch (keyPressed) {
-            case 112:
-                myPlayer.play();
-                break;
-            case 32:
-                e.preventDefault();
-                var isPlaying = myPlayer.paused();
-                if (isPlaying) {
-                    myPlayer.play();
-                } else {
-                    myPlayer.pause();
-                }
-                break;
-            case 102:
-                var isFullscreen = myPlayer.isFullscreen();
-                if (isFullscreen) {
-                    myPlayer.exitFullscreen();
-                } else {
-                    myPlayer.requestFullscreen();
-                }
-                break;
-            default:
-                break;
+        if ($('input:focus').length === 0) {
 
+            var key = $(e.which);
+            var keyPressed = key[0];
+            switch (keyPressed) {
+                case 112:
+                    myPlayer.play();
+                    break;
+                case 32:
+                    e.preventDefault();
+                    var isPlaying = myPlayer.paused();
+                    if (isPlaying) {
+                        myPlayer.play();
+                    } else {
+                        myPlayer.pause();
+                    }
+                    break;
+                case 102:
+                    var isFullscreen = myPlayer.isFullscreen();
+                    if (isFullscreen) {
+                        myPlayer.exitFullscreen();
+                    } else {
+                        myPlayer.requestFullscreen();
+                    }
+                    break;
+                default:
+                    break;
+
+            }
         }
     });
 
@@ -141,7 +143,6 @@ $(document).ready(function () {
 
     $('body').delegate('[data-role="removeFileFromPlaylist"]', 'click', function () {
         var playIndex = $(this).attr('data-list-index');
-        console.log(currentPlaylist);
         removeFileFromPlaylist(playIndex, currentPlaylist, playlisttable);
     });
     $('body').delegate('[data-role="selectAlbum"]', 'click', function () {
@@ -171,7 +172,12 @@ $(document).ready(function () {
     });
 
     $('body').delegate('[data-role="savePlaylist"]', 'click', function () {
-        savePlaylist(currentPlaylist);
+        if (currentPlaylist.length < 2) {
+            alert('Please add at least two files to the playlist');
+        } else {
+            savePlaylist(currentPlaylist);
+
+        }
     });
 
 
@@ -195,16 +201,7 @@ $(document).ready(function () {
         $(this).addClass('bold');
 
     });
-    var playlistUrl = '/api/1.0/playlists/list';
-    $.getJSON(playlistUrl, function (res) {
-        var playDrop = $('[data-role="listPlaylists"]');
-        for (var i = 0; i < res.length; i++) {
-            playDrop.append($("<option></option>")
-                .attr("value", res[i]._id)
-                .text(res[i].name));
 
-        }
-    });
     $('[data-role="listPlaylists"]').change(function () {
         var playlistId = $(this).val();
         loadPlaylist(playlistId, currentPlaylist, playlisttable, function (newCurrentPlaylist) {
@@ -213,6 +210,8 @@ $(document).ready(function () {
     });
     $('[data-role="artists-result-table"]').hide();
     $('[data-role="albums-result-table"]').hide();
+
+    loadPlaylistSelect();
     /*
      setInterval(function () {
      console.log(currentlyPlaying);
@@ -221,11 +220,7 @@ $(document).ready(function () {
      */
 });
 removeFileFromPlaylist = function (fileIndex, currentPlaylist, playlisttable) {
-    console.log(currentPlaylist);
-    console.log('Removeing file');
-    console.log(fileIndex);
     currentPlaylist.splice(fileIndex, 1);
-    console.log(currentPlaylist);
     loadPlaylistTable(playlisttable, currentPlaylist);
 };
 loadPlaylist = function (playlistId, currentPlaylist, playlisttable, callback) {
@@ -280,7 +275,7 @@ updateFileMetaInfo = function (file) {
 
 };
 playFile = function (file, myPlayer, currentlyPlaying) {
-    var url = 'http://'+myPlayer.hostAddress+':1337/?path=' + file;
+    var url = 'http://' + myPlayer.hostAddress + ':1337/?path=' + file;
     currentlyPlaying.file = file;
     myPlayer.src({src: url});
     myPlayer.play();
@@ -290,7 +285,7 @@ playFile = function (file, myPlayer, currentlyPlaying) {
     $('[data-file="' + file + '"]').addClass('bold');
 };
 playFileFromList = function (file, myPlayer, currentlyPlaying) {
-    var url = 'http://'+myPlayer.hostAddress+':1337/?path=' + file;
+    var url = 'http://' + myPlayer.hostAddress + ':1337/?path=' + file;
     currentlyPlaying.file = file;
     myPlayer.src({src: url});
     myPlayer.play();
@@ -339,6 +334,7 @@ savePlaylist = function () {
     var formData = $('#savePlaylistForm').serialize();
     $.post(url, formData, function (res) {
         alert('Playlist saved');
+        loadPlaylistSelect();
     });
 };
 clearSelection = function () {
@@ -417,6 +413,18 @@ selectCollectionSection = function (section) {
             $('[data-role="albums-result-table"]').hide();
             break;
     }
+};
+
+loadPlaylistSelect = function () {
+    var playlistUrl = '/api/1.0/playlists/list';
+    $.getJSON(playlistUrl, function (res) {
+        var playDrop = $('[data-role="listPlaylists"]');
+        for (var i = 0; i < res.length; i++) {
+            playDrop.append($("<option></option>")
+                .attr("value", res[i]._id)
+                .text(res[i].name));
+        }
+    });
 };
 
 
