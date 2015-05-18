@@ -27,12 +27,19 @@
 
         .icon, .selectFile {
             cursor: pointer;
+            font-size: 20px;
         }
 
         .collection-results {
             height: 99%;
             overflow: hidden;
         }
+        i.ion-skip-forward, i.ion-skip-backward, i.ion-play, i.ion-pause {
+            font-size:34px;
+            margin-top:4px;
+        }
+
+
     </style>
 </head>
 <body>
@@ -169,8 +176,8 @@
                     <i data-role="nextPlaylist" class="icon ion-skip-forward"> </i>
                     <input data-role="playlistName" placeholder="Playlist name" name="playlistName" type="text"
                            class="field-light">
-                    <button type="button" data-role="savePlaylist" class="button button-small right">Save</button>
                 </h3>
+                    <button type="button" data-role="savePlaylist" class="button button-small right">Save</button>
                 <table id="playlistTable" class="table-light">
                     <thead>
                     <tr>
