@@ -13,6 +13,7 @@ $(document).ready(function () {
             if (currentlyPlaying.type === 'file') {
                 var nextPosition = parseFloat(currentlyPlaying.position) + 1;
                 var nextFile = $('[data-file-index="' + nextPosition + '"]').attr('data-file');
+                currentlyPlaying.position = nextPosition;
                 playFile(nextFile, this, currentlyPlaying);
             } else {
                 playNext(currentPlaylist, currentlyPlaying, this)
@@ -320,12 +321,18 @@ playNext = function (currentPlaylist, currentlyPlaying, myPlayer) {
         console.log('Playlist ended');
 
     } else {
-        $('[data-file-type="list"]').removeClass('bold');
-        $('[data-list-index="' + nextPosition + '"]').addClass('bold');
-        var file = currentPlaylist[nextPosition].file;
-        currentlyPlaying.file = file;
-        currentlyPlaying.position = nextPosition;
-        playFile(file, myPlayer, currentlyPlaying);
+        if (currentlyPlaying.type === 'file') {
+            var nextFile = $('[data-file-index="' + nextPosition + '"]').attr('data-file');
+            currentlyPlaying.position = nextPosition;
+            playFile(nextFile, this, currentlyPlaying);
+        } else {
+            $('[data-file-type="list"]').removeClass('bold');
+            $('[data-list-index="' + nextPosition + '"]').addClass('bold');
+            var file = currentPlaylist[nextPosition].file;
+            currentlyPlaying.file = file;
+            currentlyPlaying.position = nextPosition;
+            playFile(file, myPlayer, currentlyPlaying);
+        }
     }
 };
 playPrevious = function (currentPlaylist, currentlyPlaying, myPlayer) {
