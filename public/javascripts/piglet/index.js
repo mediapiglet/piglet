@@ -138,21 +138,25 @@ $(document).ready(function () {
             text: '<i class="icon icon-menu ion-play"> </i> Play all',
             action: function (e) {
                 e.preventDefault();
-                var thisDir = selectedDir[0].path;
-                $('[data-back="0"]').removeClass('bold');
-                $('[data-dir="' + thisDir + '"]').addClass('bold');
-                var url = '/api/1.0/media/list/' + thisDir + '/none';
-                loadFileTable(filetable, url, thisDir, function () {
 
-                    console.log($('#mediaTable tbody tr td.highlight').find('span'));
-
-
-                    var listIndex = 0; //$(this).attr('data-file-index');
-                    var selectedFile = $('[data-file-index="' + listIndex + '"]').attr('data-file');
-                    console.log(selectedFile);
-                    currentlyPlaying.type = 'file';
-                    currentlyPlaying.position = listIndex;
-                    playFile(selectedFile, myPlayer, currentlyPlaying);
+                var url = '/api/1.0/playlists/addfolder/';
+                var formData = {};
+                currentPlaylist = [];
+                formData.path = selectedDir[0].path;
+                $.post(url, formData, function (res) {
+                    var resJSON = JSON.parse(res);
+                    resJSON.folderFiles.forEach(function (fileRow) {
+                        var fileObject = {};
+                        fileObject.file = fileRow.path;
+                        fileObject.filename = fileRow.name;
+                        currentPlaylist.push(fileObject);
+                    });
+                    loadPlaylistTable(playlisttable, currentPlaylist);
+                    // var selectedFile =
+                    currentlyPlaying.position =  0; //
+                    currentlyPlaying.type = 'playlist';
+                    var selectedFile = $('[data-list-index="0"]').attr('data-file');
+                    playFileFromList(selectedFile, myPlayer, currentlyPlaying);
                 });
 
             }
@@ -188,6 +192,17 @@ $(document).ready(function () {
         }
     });
 
+    $('#mediaTable').delegate('[data-role="span-dir"]', 'dblclick', function () {
+        var isBack = $(this).attr('data-back');
+        if (isBack == 1) {
+            currentDir.pop();
+            currentDir.back = 1;
+        }
+        var thisDir = $(this).attr('data-dir');
+        var parentDir = $(this).attr('data-parent');
+        var url = '/api/1.0/media/list/' + thisDir + '/' + parentDir;
+        loadMediaTable(dynatable, filetable, url, currentDir);
+    });
     $('#mediaTable').delegate('[data-role="selectDir"]', 'click', function () {
         var isBack = $(this).attr('data-back');
         if (isBack == 1) {
@@ -215,12 +230,18 @@ $(document).ready(function () {
     });
     $('body').delegate('[data-role="selectAlbum"]', 'click', function () {
     });
-    $('body').delegate('[data-role="selectFile"]', 'click', function () {
-        var selectedFile = $(this).attr('data-file');
-        var listIndex = $(this).attr('data-file-index');
-        currentlyPlaying.type = 'file';
-        currentlyPlaying.position = listIndex;
-        playFile(selectedFile, myPlayer, currentlyPlaying);
+    $('body').delegate('[data-role="selectFile"]', 'click', function (e) {
+        if (e.ctrlKey) {
+            alert('You wanna select');
+
+        } else {
+
+            var selectedFile = $(this).attr('data-file');
+            var listIndex = $(this).attr('data-file-index');
+            currentlyPlaying.type = 'file';
+            currentlyPlaying.position = listIndex;
+            playFile(selectedFile, myPlayer, currentlyPlaying);
+        }
     });
     $('body').delegate('[data-role="selectFileFromList"]', 'click', function () {
         var selectedFile = $(this).attr('data-file');
@@ -253,11 +274,40 @@ $(document).ready(function () {
 
 
     $('body').delegate('[data-role="nextPlaylist"]', 'click', function () {
-        playNext(currentPlaylist, currentlyPlaying, myPlayer);
+        switch (currentlyPlaying.type) {
+            case 'playlist':
+                playNext(currentPlaylist, currentlyPlaying, myPlayer);
+                break;
+            default:
+                var nextPosition = currentlyPlaying.position + 1;
+                currentlyPlaying.position = nextPosition;
+                var file = $('[data-file-index="' + nextPosition + '"]').attr('data-file');
+                playFile(file, myPlayer, currentlyPlaying);
+                break;
+        }
     });
 
     $('body').delegate('[data-role="previousPlaylist"]', 'click', function () {
-        playPrevious(currentPlaylist, currentlyPlaying, myPlayer);
+
+        switch (currentlyPlaying.type) {
+            case 'playlist':
+                if(currentlyPlaying.position === 0) {
+                    currentlyPlaying.position = 1;
+                }
+                playPrevious(currentPlaylist, currentlyPlaying, myPlayer);
+                break;
+            default:
+
+                var nextPosition = 0;
+                if (currentlyPlaying.position !== 0) {
+                    nextPosition = currentlyPlaying.position - 1;
+                }
+                currentlyPlaying.position = nextPosition;
+                console.log(currentlyPlaying);
+                var file = $('[data-file-index="' + nextPosition + '"]').attr('data-file');
+                playFile(file, myPlayer, currentlyPlaying);
+                break;
+        }
     });
 
 
@@ -310,7 +360,8 @@ $(document).ready(function () {
      console.log(currentPlaylist);
      }, 1000);
      */
-});
+})
+;
 removeFileFromPlaylist = function (fileIndex, currentPlaylist, playlisttable) {
     currentPlaylist.splice(fileIndex, 1);
     loadPlaylistTable(playlisttable, currentPlaylist);
