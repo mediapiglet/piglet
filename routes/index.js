@@ -321,7 +321,7 @@ router.get('/api/:version/media/list/:filePath/:previousPath?', function (req, r
             response.parent = getParent(response.filePath);
             response.previousPath = new Buffer(response.parent).toString('base64'); // Ta-da
 
-            backDir.folder = "<span data-back='1' data-role='selectDir' data-dir='" + response.previousPath + "' data-parent='" + req.params.previousPath + "' ><i class='icon ion-arrow-left-a'> </i> Back </span";
+            backDir.folder = "<span data-back='1' data-role='span-dir' data-dir='" + response.previousPath + "' data-parent='" + req.params.previousPath + "' ><i  data-back='1' data-role='selectDir' data-dir='" + response.previousPath + "' data-parent='" + req.params.previousPath + "' class='icon ion-arrow-left-a'> </i> Back </span";
             response.dirRecords.push(backDir);
         }
     }
@@ -338,7 +338,8 @@ router.get('/api/:version/media/list/:filePath/:previousPath?', function (req, r
             var pathBuffer = new Buffer(dirRow.fullname);
             var pathBase64 = pathBuffer.toString('base64');
             thisDir.path = pathBase64;
-            thisDir.folder = "<span data-back='0' data-dir='" + pathBase64 + "' ><i data-role='selectDir' data-dir='" + pathBase64 + "' data-parent='" + req.params.filePath + "' class='icon ion-folder'> </i>" + dirRow.name + "</span";
+            thisDir.folder = "<span data-back='0' data-role='span-dir'   data-parent='" + req.params.filePath + "'  data-dir='" + pathBase64 + "' ><i data-role='selectDir' data-dir='" + pathBase64 + "' data-parent='" + req.params.filePath + "' class='icon ion-folder'> </i>" +
+            dirRow.name + "</span";
             thisDir.options = "";
             response.dirRecords.push(thisDir);
         });
