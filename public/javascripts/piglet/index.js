@@ -8,6 +8,7 @@ $(document).ready(function () {
     currentlyPlaying.position = 0;
     var myPlayer = videojs('mainVideo');
     var selectedDir = [];
+    var currentDir = [];
     var selectedFiles = [];
     videojs("mainVideo").ready(function () {
         this.hostAddress = '192.168.0.14';
@@ -137,6 +138,23 @@ $(document).ready(function () {
             text: '<i class="icon icon-menu ion-play"> </i> Play all',
             action: function (e) {
                 e.preventDefault();
+                var thisDir = selectedDir[0].path;
+                $('[data-back="0"]').removeClass('bold');
+                $('[data-dir="' + thisDir + '"]').addClass('bold');
+                var url = '/api/1.0/media/list/' + thisDir + '/none';
+                loadFileTable(filetable, url, thisDir, function () {
+
+                    console.log($('#mediaTable tbody tr td.highlight').find('span'));
+
+
+                    var listIndex = 0; //$(this).attr('data-file-index');
+                    var selectedFile = $('[data-file-index="' + listIndex + '"]').attr('data-file');
+                    console.log(selectedFile);
+                    currentlyPlaying.type = 'file';
+                    currentlyPlaying.position = listIndex;
+                    playFile(selectedFile, myPlayer, currentlyPlaying);
+                });
+
             }
         },
         {
@@ -148,10 +166,15 @@ $(document).ready(function () {
                 var formData = {};
                 formData.path = selectedDir[0].path;
                 $.post(url, formData, function (res) {
-                    loadPlaylistSelect();
-                    console.log(res);
+                    var resJSON = JSON.parse(res);
+                    resJSON.folderFiles.forEach(function (fileRow) {
+                        var fileObject = {};
+                        fileObject.file = fileRow.path;
+                        fileObject.filename = fileRow.name;
+                        currentPlaylist.push(fileObject);
+                    });
+                    loadPlaylistTable(playlisttable, currentPlaylist);
                 });
-                console.log(selectedDir);
             }
         }
     ]);
@@ -166,10 +189,15 @@ $(document).ready(function () {
     });
 
     $('#mediaTable').delegate('[data-role="selectDir"]', 'click', function () {
-        var selectedDir = $(this).attr('data-dir');
+        var isBack = $(this).attr('data-back');
+        if (isBack == 1) {
+            currentDir.pop();
+            currentDir.back = 1;
+        }
+        var thisDir = $(this).attr('data-dir');
         var parentDir = $(this).attr('data-parent');
-        var url = '/api/1.0/media/list/' + selectedDir + '/' + parentDir;
-        loadMediaTable(dynatable, filetable, url);
+        var url = '/api/1.0/media/list/' + thisDir + '/' + parentDir;
+        loadMediaTable(dynatable, filetable, url, currentDir);
     });
     $('body').delegate('[data-role="selectSection"]', 'click', function () {
         var section = $(this).attr('data-section');
@@ -240,6 +268,8 @@ $(document).ready(function () {
         fileObject.file = selectedFile;
         fileObject.filename = selectedFilename;
         currentPlaylist.push(fileObject);
+        console.log(currentPlaylist);
+
         loadPlaylistTable(playlisttable, currentPlaylist);
         $(this).addClass('bold');
 
@@ -247,7 +277,7 @@ $(document).ready(function () {
 
 
     $('#mediaTable').delegate('td', 'mouseover', function () {
-        if(selectedDir.length===0) {
+        if (selectedDir.length === 0) {
             var thisDir = {};
             thisDir.path = $(this).find('span').attr('data-dir');
             selectedDir.push(thisDir);
@@ -317,12 +347,67 @@ loadPlaylistTable = function (playlisttable, currentPlaylist) {
     }
 };
 
-loadMediaTable = function (dynatable, filetable, url) {
+loadFileTable = function (filetable, url, currentDir, callback) {
+    $.getJSON(url, function (res) {
+        filetable.settings.dataset.originalRecords = res.fileRecords;
+        filetable.process();
+        if (res.dirname === 'comedy') {
+            res.dirname = '';
+        }
+        var thisCurrent = {};
+        thisCurrent.dirname = res.dirname;
+        thisCurrent.path = res.encPath;
+        currentDir.back = 0;
+        /*
+         var currentHtml = '';
+         if (currentDir) {
+         currentDir.forEach(function (dir) {
+         currentHtml = currentHtml + ' / ' + dir.dirname;
+         });
+         }
+         if (currentHtml === '') {
+         currentHtml = '-';
+
+         }
+         $('[data-role="current-path"]').html(currentHtml);
+         */
+        callback();
+    });
+
+};
+
+loadMediaTable = function (dynatable, filetable, url, currentDir) {
     $.getJSON(url, function (res) {
         dynatable.settings.dataset.originalRecords = res.dirRecords;
         dynatable.process();
         filetable.settings.dataset.originalRecords = res.fileRecords;
         filetable.process();
+        if (res.dirname === 'comedy') {
+            res.dirname = '';
+        }
+        var thisCurrent = {};
+        thisCurrent.dirname = res.dirname;
+        thisCurrent.path = res.encPath;
+        if (currentDir.back != 1) {
+            currentDir.push(thisCurrent)
+        } else {
+            currentDir.back = 0;
+
+        }
+
+        console.log(currentDir);
+        var currentHtml = '';
+        if (currentDir) {
+
+            currentDir.forEach(function (dir) {
+                currentHtml = currentHtml + ' / ' + dir.dirname;
+            });
+        }
+        if (currentHtml === '') {
+            currentHtml = '-';
+
+        }
+        $('[data-role="current-path"]').html(currentHtml);
     });
 
 };

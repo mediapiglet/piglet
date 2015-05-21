@@ -11,7 +11,7 @@
     <title><%= title %></title>
     <style type="text/css">
         .container div {
-            padding: 5px;
+            padding: 0 5px 0 5px;
         }
 
         .hidden {
@@ -30,23 +30,31 @@
             cursor: pointer;
             font-size: 20px;
         }
-        .icon-menu{
-            font-size:14px;
-            margin-right:3px;
+
+        .icon-menu {
+            font-size: 14px;
+            margin-right: 3px;
         }
 
         .collection-results {
             height: 99%;
             overflow: hidden;
         }
+
         #savePlaylistForm i.ion-skip-forward, #savePlaylistForm .ion-skip-backward, #savePlaylistForm i.ion-play, #savePlaylistForm i.ion-pause {
-            font-size:34px;
-            margin-top:4px;
+            font-size: 34px;
+            margin-top: 4px;
         }
 
         .highlight {
             background-color: lightgray;
         }
+
+        .nowPlayingDir {
+            padding-left: 25px;
+            text-align: left;
+        }
+
 
 
     </style>
@@ -87,6 +95,9 @@
 
 </div>
 <div class="container">
+    <div data-role="pane" data-pane="browse" data-field="nowPlayingDir" class="nowPlayingDir hidden">
+        <h3><span data-role="current-path">-</span></h3>
+    </div>
     <div class="clearfix">
         <div class="sm-col sm-col-4 hidden" id="testW" data-role="pane" data-pane="browse">
 
@@ -186,7 +197,7 @@
                     <input data-role="playlistName" placeholder="Playlist name" name="playlistName" type="text"
                            class="field-light">
                 </h3>
-                    <button type="button" data-role="savePlaylist" class="button button-small right">Save</button>
+                <button type="button" data-role="savePlaylist" class="button button-small right">Save</button>
 
                 <table id="playlistTable" class="table-light">
                     <thead>

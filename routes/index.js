@@ -223,13 +223,23 @@ router.get('/api/:version/playlists/load/:playlistId', function (req, res, next)
     });
 });
 router.post('/api/:version/playlists/addfolder', function (req, res, next) {
-    var pathBuffer = new Buffer(req.body.path);
     var path = new Buffer(req.body.path, 'base64').toString(); // Ta-da
+    var resArray = [];
+    var response = {};
+    response.ok = 0;
     scanDir(path, function (folderFiles) {
         folderFiles.files.forEach(function (fileRow) {
             console.log(fileRow);
-        })
+        });
+        response.folderFiles = folderFiles.files;
+        resArray.push(response);
+        res.send(
+            JSON.stringify(
+                response
+            )
+        );
     })
+
 });
 router.post('/api/:version/playlists/save', function (req, res, next) {
     console.log('Called playlist save');
@@ -296,6 +306,7 @@ router.get('/api/:version/media/list/:filePath/:previousPath?', function (req, r
         req.params.filePath = pathBase64;
 
     }
+    response.encPath = req.params.filePath;
     response.dirRecords = [];
     response.fileRecords = [];
     if (req.params.filePath) {
@@ -310,7 +321,7 @@ router.get('/api/:version/media/list/:filePath/:previousPath?', function (req, r
             response.parent = getParent(response.filePath);
             response.previousPath = new Buffer(response.parent).toString('base64'); // Ta-da
 
-            backDir.folder = "<span data-role='selectDir' data-dir='" + response.previousPath + "' data-parent='" + req.params.previousPath + "' ><i class='icon ion-arrow-left-a'> </i> Back </span";
+            backDir.folder = "<span data-back='1' data-role='selectDir' data-dir='" + response.previousPath + "' data-parent='" + req.params.previousPath + "' ><i class='icon ion-arrow-left-a'> </i> Back </span";
             response.dirRecords.push(backDir);
         }
     }
@@ -318,6 +329,7 @@ router.get('/api/:version/media/list/:filePath/:previousPath?', function (req, r
 
     scanDir(response.filePath, function (currentLists) {
         console.log(response.filePath);
+        response.dirname = response.filePath.split('\\').pop().split('/').pop();
         currentLists.dir.forEach(function (dirRow) {
 
             dirRow.name = dirRow.name.replace(/_/g, " ");
@@ -325,7 +337,8 @@ router.get('/api/:version/media/list/:filePath/:previousPath?', function (req, r
             var thisDir = {};
             var pathBuffer = new Buffer(dirRow.fullname);
             var pathBase64 = pathBuffer.toString('base64');
-            thisDir.folder = "<span data-dir='" + pathBase64 + "' ><i data-role='selectDir' data-dir='" + pathBase64 + "' data-parent='" + req.params.filePath + "' class='icon ion-folder'> </i>" + dirRow.name + "</span";
+            thisDir.path = pathBase64;
+            thisDir.folder = "<span data-back='0' data-dir='" + pathBase64 + "' ><i data-role='selectDir' data-dir='" + pathBase64 + "' data-parent='" + req.params.filePath + "' class='icon ion-folder'> </i>" + dirRow.name + "</span";
             thisDir.options = "";
             response.dirRecords.push(thisDir);
         });
@@ -339,11 +352,10 @@ router.get('/api/:version/media/list/:filePath/:previousPath?', function (req, r
             fileRow.name = fileRow.name.replace(/Zmp4/gi, ".mp4");
             var thisExt = fileRow.name.split('.').pop().toLowerCase();
             if (thisExt === 'mp3' || thisExt === 'mp4') {
-
-
                 var thisFile = {};
                 var pathBuffer = new Buffer(fileRow.fullname);
                 var pathBase64 = pathBuffer.toString('base64');
+                thisFile.path = pathBase64;
                 thisFile.file = "<span data-file-type='fileList' class='selectfile' data-role='selectFile' data-file='" + pathBase64 + "' data-parent='" + req.params.filePath + "' data-file-index='" + i + "'>" + fileRow.name + "</span";
                 thisFile.playlist = "<span data-role='addToPlaylist' data-file='" + pathBase64 + "' data-filename='" + fileRow.name + "' data-parent='" + req.params.filePath + "'><i class='icon ion-plus'> </i></span";
                 response.fileRecords.push(thisFile);
@@ -390,8 +402,12 @@ function scanDir(pathName, callback) {
         var dirList = [];
         var fileList = [];
         fileArray.forEach(function (file) {
-            var fullPath = pathName + '/' + file;
+
             var thisFile = {};
+            var fullPath = pathName + '/' + file;
+            var pathBuffer = new Buffer(fullPath);
+            var pathBase64 = pathBuffer.toString('base64');
+            thisFile.path = pathBase64;
             thisFile.name = file;
             thisFile.fullname = fullPath;
             isDir = fs.lstatSync(fullPath).isDirectory();
@@ -400,8 +416,14 @@ function scanDir(pathName, callback) {
                 dirCount++;
                 dirList.push(thisFile);
             } else {
-                fileCount++;
-                fileList.push(thisFile);
+                var thisExt = file.split('.').pop().toLowerCase();
+                switch (thisExt) {
+                    case 'mp3':
+                    case 'mp4':
+                        fileCount++;
+                        fileList.push(thisFile);
+                        break;
+                }
             }
         });
         dirList.sort(sort_by('name', false, function (a) {
