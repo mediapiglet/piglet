@@ -6,6 +6,7 @@
     <link type="text/css" rel="stylesheet" href="/stylesheets/jquery.dynatable.css"/>
     <link type="text/css" rel="stylesheet" href="/stylesheets/ionicons.min.css"/>
     <link type="text/css" rel="stylesheet" href="/stylesheets/video-js.css"/>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/context.standalone.css"/>
     <link type="text/css" rel="stylesheet" href="/stylesheets/videojs-overlay.css"/>
     <title><%= title %></title>
     <style type="text/css">
@@ -29,14 +30,22 @@
             cursor: pointer;
             font-size: 20px;
         }
+        .icon-menu{
+            font-size:14px;
+            margin-right:3px;
+        }
 
         .collection-results {
             height: 99%;
             overflow: hidden;
         }
-        i.ion-skip-forward, i.ion-skip-backward, i.ion-play, i.ion-pause {
+        #savePlaylistForm i.ion-skip-forward, #savePlaylistForm .ion-skip-backward, #savePlaylistForm i.ion-play, #savePlaylistForm i.ion-pause {
             font-size:34px;
             margin-top:4px;
+        }
+
+        .highlight {
+            background-color: lightgray;
         }
 
 
@@ -178,6 +187,7 @@
                            class="field-light">
                 </h3>
                     <button type="button" data-role="savePlaylist" class="button button-small right">Save</button>
+
                 <table id="playlistTable" class="table-light">
                     <thead>
                     <tr>
@@ -196,6 +206,7 @@
 </html>
 <script src="/javascripts/jquery-2.1.4.min.js"></script>
 <script src="/javascripts/jquery.dynatable.js"></script>
+<script src="/javascripts/context.js"></script>
 <script src="/javascripts/video.js"></script>
 <script src="/javascripts/videojs-overlay.js"></script>
 <script src="/javascripts/piglet/index.js"></script>

@@ -7,6 +7,8 @@ $(document).ready(function () {
     var currentlyPlaying = {};
     currentlyPlaying.position = 0;
     var myPlayer = videojs('mainVideo');
+    var selectedDir = [];
+    var selectedFiles = [];
     videojs("mainVideo").ready(function () {
         this.hostAddress = '192.168.0.14';
         this.on("ended", function () {
@@ -122,6 +124,37 @@ $(document).ready(function () {
 
 
     });
+    context.init({
+        fadeSpeed: 100,
+        filter: function ($obj) {
+        },
+        above: 'auto',
+        preventDoubleContext: false,
+        compress: false
+    });
+    context.attach('#mediaTable', [
+        {
+            text: '<i class="icon icon-menu ion-play"> </i> Play all',
+            action: function (e) {
+                e.preventDefault();
+            }
+        },
+        {
+            text: '<i class="icon icon-menu ion-plus"> </i> Add folder to playlist',
+            action: function (e) {
+                e.preventDefault();
+
+                var url = '/api/1.0/playlists/addfolder/';
+                var formData = {};
+                formData.path = selectedDir[0].path;
+                $.post(url, formData, function (res) {
+                    loadPlaylistSelect();
+                    console.log(res);
+                });
+                console.log(selectedDir);
+            }
+        }
+    ]);
     $('body').delegate('[data-role="search-top"]', 'input', function () {
         var numberChars = this.value.length;
         if (numberChars >= 3) {
@@ -210,6 +243,25 @@ $(document).ready(function () {
         loadPlaylistTable(playlisttable, currentPlaylist);
         $(this).addClass('bold');
 
+    });
+
+
+    $('#mediaTable').delegate('td', 'mouseover', function () {
+        if(selectedDir.length===0) {
+            var thisDir = {};
+            thisDir.path = $(this).find('span').attr('data-dir');
+            selectedDir.push(thisDir);
+        }
+
+        if (!context.isActive()) {
+            $(this).addClass('highlight');
+        }
+    });
+    $('#mediaTable').delegate('td', 'mouseout', function () {
+        if (!context.isActive()) {
+            $(this).removeClass('highlight');
+            selectedDir = [];
+        }
     });
 
     $('[data-role="listPlaylists"]').change(function () {
