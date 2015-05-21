@@ -24,6 +24,7 @@ var context = context || (function () {
             $(document).on('click', 'html', function () {
                 if(context.isActive()) {
                     $('#mediaTable td').removeClass('highlight');
+                    $('#fileTable td').removeClass('highlight');
                 }
                 options.active = false;
                 $('.dropdown-context').fadeOut(options.fadeSpeed, function () {

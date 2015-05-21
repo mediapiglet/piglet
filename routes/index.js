@@ -91,9 +91,12 @@ router.get('/api/:version/music/filedata/:encPath', function (req, res, next) {
                 fileData.filename = fileData.path.split('\\').pop().split('/').pop();
                 res.send(fileData);
             } else {
-                var noData = {};
-                noData.status = 1;
-                res.send(noData);
+                var path = new Buffer(encPath, 'base64').toString(); // Ta-da
+                var fileData = {};
+                fileData.data = {};
+                fileData.data.title = path.split('\\').pop().split('/').pop();
+                console.log(fileData.data);
+                res.send(fileData);
             }
 
         });

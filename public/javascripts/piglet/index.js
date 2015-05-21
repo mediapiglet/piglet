@@ -153,7 +153,7 @@ $(document).ready(function () {
                     });
                     loadPlaylistTable(playlisttable, currentPlaylist);
                     // var selectedFile =
-                    currentlyPlaying.position =  0; //
+                    currentlyPlaying.position = 0; //
                     currentlyPlaying.type = 'playlist';
                     var selectedFile = $('[data-list-index="0"]').attr('data-file');
                     playFileFromList(selectedFile, myPlayer, currentlyPlaying);
@@ -163,6 +163,55 @@ $(document).ready(function () {
         },
         {
             text: '<i class="icon icon-menu ion-plus"> </i> Add folder to playlist',
+            action: function (e) {
+                e.preventDefault();
+
+                var url = '/api/1.0/playlists/addfolder/';
+                var formData = {};
+                formData.path = selectedDir[0].path;
+                $.post(url, formData, function (res) {
+                    var resJSON = JSON.parse(res);
+                    resJSON.folderFiles.forEach(function (fileRow) {
+                        var fileObject = {};
+                        fileObject.file = fileRow.path;
+                        fileObject.filename = fileRow.name;
+                        currentPlaylist.push(fileObject);
+                    });
+                    loadPlaylistTable(playlisttable, currentPlaylist);
+                });
+            }
+        }
+    ]);
+    context.attach('#fileTable', [
+        {
+            text: '<i class="icon icon-menu ion-play"> </i> Play file',
+            action: function (e) {
+                e.preventDefault();
+
+                var url = '/api/1.0/playlists/addfolder/';
+                var formData = {};
+                currentPlaylist = [];
+                currentlyPlaying.position = 0; //
+                currentlyPlaying.type = 'playlist';
+                var selectedFile = $('[data-list-index="0"]').attr('data-file');
+                formData.path = selectedFile;
+                $.post(url, formData, function (res) {
+                    var resJSON = JSON.parse(res);
+                    resJSON.folderFiles.forEach(function (fileRow) {
+                        var fileObject = {};
+                        fileObject.file = fileRow.path;
+                        fileObject.filename = fileRow.name;
+                        currentPlaylist.push(fileObject);
+                    });
+                    loadPlaylistTable(playlisttable, currentPlaylist);
+                    // var selectedFile =
+                    playFileFromList(selectedFile, myPlayer, currentlyPlaying);
+                });
+
+            }
+        },
+        {
+            text: '<i class="icon icon-menu ion-plus"> </i> Add file to playlist',
             action: function (e) {
                 e.preventDefault();
 
@@ -230,7 +279,7 @@ $(document).ready(function () {
     });
     $('body').delegate('[data-role="selectAlbum"]', 'click', function () {
     });
-    $('body').delegate('[data-role="selectFile"]', 'click', function (e) {
+    $('body').delegate('[data-role="selectFile"]', 'dblclick', function (e) {
         if (e.ctrlKey) {
             alert('You wanna select');
 
@@ -279,8 +328,8 @@ $(document).ready(function () {
                 playNext(currentPlaylist, currentlyPlaying, myPlayer);
                 break;
             default:
-                var nextPosition = currentlyPlaying.position + 1;
-                currentlyPlaying.position = nextPosition;
+                var nextPosition = parseInt(currentlyPlaying.position) + 1;
+                currentlyPlaying.position = parseInt(nextPosition);
                 var file = $('[data-file-index="' + nextPosition + '"]').attr('data-file');
                 playFile(file, myPlayer, currentlyPlaying);
                 break;
@@ -291,7 +340,7 @@ $(document).ready(function () {
 
         switch (currentlyPlaying.type) {
             case 'playlist':
-                if(currentlyPlaying.position === 0) {
+                if (currentlyPlaying.position === 0) {
                     currentlyPlaying.position = 1;
                 }
                 playPrevious(currentPlaylist, currentlyPlaying, myPlayer);
@@ -337,7 +386,27 @@ $(document).ready(function () {
             $(this).addClass('highlight');
         }
     });
+
+    $('#fileTable').delegate('td', 'mouseover', function () {
+        if (selectedFiles.length === 0) {
+            /*
+            var thisDir = {};
+            thisDir.path = $(this).find('span').attr('data-dir');
+            selectedDir.push(thisDir);
+            */
+        }
+
+        if (!context.isActive()) {
+            $(this).addClass('highlight');
+        }
+    });
     $('#mediaTable').delegate('td', 'mouseout', function () {
+        if (!context.isActive()) {
+            $(this).removeClass('highlight');
+            selectedDir = [];
+        }
+    });
+    $('#fileTable').delegate('td', 'mouseout', function () {
         if (!context.isActive()) {
             $(this).removeClass('highlight');
             selectedDir = [];
@@ -466,9 +535,16 @@ updateFileMetaInfo = function (file) {
     var url = '/api/1.0/music/filedata/' + file;
     $.getJSON(url, function (res) {
         $('[data-role="meta-filename"]').html(res.filename);
-        $('[data-role="meta-title"]').html(res.data.title.replace(/[^ -~]+/g, ""));
-        $('[data-role="meta-artist"]').html(res.data.artist.replace(/[^ -~]+/g, ""));
-        $('[data-role="meta-album"]').html(res.data.album.replace(/[^ -~]+/g, ""));
+        if (res.data.artist) {
+            $('[data-role="meta-title"]').html(res.data.title.replace(/[^ -~]+/g, ""));
+            $('[data-role="meta-artist"]').html(res.data.artist.replace(/[^ -~]+/g, ""));
+            $('[data-role="meta-album"]').html(res.data.album.replace(/[^ -~]+/g, ""));
+        }else{
+            $('[data-role="meta-title"]').html(res.data.title.replace(/[^ -~]+/g, ""));
+            $('[data-role="meta-artist"]').html('');
+            $('[data-role="meta-album"]').html('');
+        }
+
     });
 
 };
