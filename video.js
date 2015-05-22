@@ -6,6 +6,10 @@ var http = require('http'),
 var config = require('./config/piglet.json');
 var listenAddress = config.piglet.videojs.videoListenAddress;
 
+process.on('uncaughtException', function (err) {
+    console.log('Caught exception: ' + err);
+});
+
 http.createServer(function (req, res) {
     var parsedUrl = url.parse(req.url, true); // true to get query as object
     var getParams = parsedUrl.query;
