@@ -279,18 +279,18 @@ $(document).ready(function () {
     });
     $('body').delegate('[data-role="selectAlbum"]', 'click', function () {
     });
-    $('body').delegate('[data-role="selectFile"]', 'dblclick', function (e) {
+    $('body').delegate('[data-role="selectFile"]', 'click', function (e) {
+        
         if (e.ctrlKey) {
             alert('You wanna select');
-
-        } else {
-
-            var selectedFile = $(this).attr('data-file');
-            var listIndex = $(this).attr('data-file-index');
-            currentlyPlaying.type = 'file';
-            currentlyPlaying.position = listIndex;
-            playFile(selectedFile, myPlayer, currentlyPlaying);
         }
+    });
+    $('body').delegate('[data-role="selectFile"]', 'dblclick', function (e) {
+        var selectedFile = $(this).attr('data-file');
+        var listIndex = $(this).attr('data-file-index');
+        currentlyPlaying.type = 'file';
+        currentlyPlaying.position = listIndex;
+        playFile(selectedFile, myPlayer, currentlyPlaying);
     });
     $('body').delegate('[data-role="selectFileFromList"]', 'click', function () {
         var selectedFile = $(this).attr('data-file');
@@ -390,17 +390,17 @@ $(document).ready(function () {
     $('#fileTable').delegate('td', 'mouseover', function () {
         if (selectedFiles.length === 0) {
             /*
-            var thisDir = {};
-            thisDir.path = $(this).find('span').attr('data-dir');
-            selectedDir.push(thisDir);
-            */
+             var thisDir = {};
+             thisDir.path = $(this).find('span').attr('data-dir');
+             selectedDir.push(thisDir);
+             */
         }
 
         if (!context.isActive()) {
             $(this).addClass('highlight');
         }
     });
-    $('#mediaTable').delegate('td', 'mouseout', function () {
+    $('#mediaTable').delegate('td', 'mouseout', function (e) {
         if (!context.isActive()) {
             $(this).removeClass('highlight');
             selectedDir = [];
@@ -539,7 +539,7 @@ updateFileMetaInfo = function (file) {
             $('[data-role="meta-title"]').html(res.data.title.replace(/[^ -~]+/g, ""));
             $('[data-role="meta-artist"]').html(res.data.artist.replace(/[^ -~]+/g, ""));
             $('[data-role="meta-album"]').html(res.data.album.replace(/[^ -~]+/g, ""));
-        }else{
+        } else {
             $('[data-role="meta-title"]').html(res.data.title.replace(/[^ -~]+/g, ""));
             $('[data-role="meta-artist"]').html('');
             $('[data-role="meta-album"]').html('');

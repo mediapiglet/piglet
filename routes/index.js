@@ -360,7 +360,7 @@ router.get('/api/:version/media/list/:filePath/:previousPath?', function (req, r
                 var pathBuffer = new Buffer(fileRow.fullname);
                 var pathBase64 = pathBuffer.toString('base64');
                 thisFile.path = pathBase64;
-                thisFile.file = "<span data-file-type='fileList' class='selectfile' data-role='selectFile' data-file='" + pathBase64 + "' data-parent='" + req.params.filePath + "' data-file-index='" + i + "'>" + fileRow.name + "</span";
+                thisFile.file = "<span data-selected=0 data-file-type='fileList' class='selectfile' data-role='selectFile' data-file='" + pathBase64 + "' data-parent='" + req.params.filePath + "' data-file-index='" + i + "'>" + fileRow.name + "</span";
                 thisFile.playlist = "<span data-role='addToPlaylist' data-file='" + pathBase64 + "' data-filename='" + fileRow.name + "' data-parent='" + req.params.filePath + "'><i class='icon ion-plus'> </i></span";
                 response.fileRecords.push(thisFile);
                 i++;
