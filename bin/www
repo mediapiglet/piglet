@@ -92,7 +92,7 @@ var fs = require('fs'),
     url = require('url'),
     util = require('util');
 
-var config = require('./config/piglet.json');
+var config = require('../config/piglet.json');
 var listenAddress = config.piglet.videojs.videoListenAddress;
 
 process.on('uncaughtException', function (err) {
